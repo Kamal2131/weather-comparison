@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}About Us{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="about-card">
+    <h1>About This Project</h1>
+    <p>
+      Welcome to the <strong>Weather Comparison App</strong> — your tool to compare live and historical weather data for cities across the globe. This platform is built with <strong>FastAPI</strong>, <strong>Jinja2</strong>, and integrates with <strong>Amazon S3</strong> for persistent data storage.
+    </p>
+
+    <h2>🔍 What it Does</h2>
+    <ul>
+      <li>📊 Compares max/min temperatures, wind speeds, and rainy day frequency</li>
+      <li>📁 Stores weather reports in your S3 bucket under <code>weather/</code></li>
+      <li>📈 Visualizes comparisons using beautiful Chart.js bar graphs</li>
+    </ul>
+
+    <h2>🎯 Our Mission</h2>
+    <p>
+      Our goal is to make weather data analysis fun, fast, and interactive — whether you're a developer, student, or data enthusiast. We believe clean visuals and cloud-first design can make even the simplest tools powerful.
+    </p>
+
+    <h2>👨‍💻 Built By</h2>
+    <ul>
+      <li><strong>Kamal Krishna Ghosh</strong></li>
+      <li>FastAPI Enthusiast & Full Stack Developer</li>
+    </ul>
+
+    <p style="margin-top: 2rem; text-align: center;">
+      🌦️ Built with 💙 using FastAPI + Chart.js + AWS
+    </p>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+{% block title %}Compare Cities{% endblock %}
+{% block content %}
+
+<div class="hero">
+  <h1>Weather Comparison: City vs City</h1>
+  <p>Compare weather statistics between two cities with real historical data.</p>
+</div>
+
+{% if not city1 and not city2 %}
+<!-- Live API Form -->
+<div class="controls">
+  <form method="post" action="/compare" onsubmit="return validateDateRange();">
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="city1">First City</label>
+        <select name="city1" id="city1" required>
+          <option disabled selected>Select First City</option>
+          {% for city in available_cities %}
+          <option value="{{ city }}">{{ city }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="city2">Second City</label>
+        <select name="city2" id="city2" required>
+          <option disabled selected>Select Second City</option>
+          {% for city in available_cities %}
+          <option value="{{ city }}">{{ city }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="start">Start Date</label>
+        <input type="date" name="start" id="start" required />
+      </div>
+      <div class="form-group">
+        <label for="end">End Date</label>
+        <input type="date" name="end" id="end" required />
+      </div>
+    </div>
+    <button type="submit" class="btn btn-full">
+      <i class="fas fa-chart-line"></i> Compare Weather
+    </button>
+  </form>
+</div>
+{% endif %}
+
+<script>
+  const today = new Date().toISOString().split("T")[0];
+  const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+  document.getElementById("start")?.setAttribute("max", today);
+  document.getElementById("end")?.setAttribute("max", today);
+  document.getElementById("start")?.setAttribute("value", threeDaysAgo);
+  document.getElementById("end")?.setAttribute("value", today);
+
+  function validateDateRange() {
+    const start = new Date(document.getElementById("start").value);
+    const end = new Date(document.getElementById("end").value);
+    const diff = (end - start) / (1000 * 60 * 60 * 24);
+    if (start > end) {
+      alert("Start date cannot be after end date.");
+      return false;
+    }
+    if (diff > 6) {
+      alert("Please select a range of 7 days or fewer (WeatherAPI free plan limit).\nSelected: " + (diff + 1) + " days.");
+      return false;
+    }
+    return true;
+  }
+</script>
+
+<!-- Error Message -->
+{% if city1 is none or city2 is none %}
+<div class="error-message" style="background-color: #ffe6e6; border: 1px solid #ff4d4d; padding: 15px; margin-top: 20px; border-radius: 8px;">
+  <p>⚠️ <strong>Sorry!</strong> We couldn't retrieve weather data for one or both cities.</p>
+  <p>Please make sure:</p>
+  <ul>
+    <li>The city names are spelled correctly</li>
+    <li>The date range is valid and within the last 7 days</li>
+  </ul>
+</div>
+{% elif city1 and city2 %}
+<!-- Weather Cards -->
+<div class="weather-cards">
+  <div class="weather-card">
+    <h2 class="city-name">{{ city1.name }}</h2>
+    <div class="weather-stats">
+      <div class="stat"><div class="stat-value">{{ city1.max }}°C</div><div class="stat-label">Max</div></div>
+      <div class="stat"><div class="stat-value">{{ city1.min }}°C</div><div class="stat-label">Min</div></div>
+      <div class="stat"><div class="stat-value">{{ city1.wind }} km/h</div><div class="stat-label">Wind</div></div>
+      <div class="stat"><div class="stat-value">{{ city1.rain }} days</div><div class="stat-label">Rainy Days</div></div>
+    </div>
+  </div>
+
+  <div class="weather-card">
+    <h2 class="city-name">{{ city2.name }}</h2>
+    <div class="weather-stats">
+      <div class="stat"><div class="stat-value">{{ city2.max }}°C</div><div class="stat-label">Max</div></div>
+      <div class="stat"><div class="stat-value">{{ city2.min }}°C</div><div class="stat-label">Min</div></div>
+      <div class="stat"><div class="stat-value">{{ city2.wind }} km/h</div><div class="stat-label">Wind</div></div>
+      <div class="stat"><div class="stat-value">{{ city2.rain }} days</div><div class="stat-label">Rainy Days</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Charts -->
+<div class="charts">
+  <canvas id="tempChart"></canvas>
+  <canvas id="windChart"></canvas>
+  <canvas id="rainChart"></canvas>
+
+  <div style="text-align: center; margin-top: 1rem;">
+  <button class="btn btn-full" onclick="downloadCSV()">⬇️ Download as CSV</button>
+</div>
+
+<script>
+  function downloadCSV() {
+    const csv = `City,Max Temp (°C),Min Temp (°C),Wind Speed (km/h),Rainy Days
+{{ city1.name }},{{ city1.max }},{{ city1.min }},{{ city1.wind }},{{ city1.rain }}
+{{ city2.name }},{{ city2.max }},{{ city2.min }},{{ city2.wind }},{{ city2.rain }}`;
+
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "weather_comparison.csv";
+    a.click();
+    window.URL.revokeObjectURL(url);
+  }
+</script>
+
+</div>
+
+<script>
+  new Chart(document.getElementById("tempChart").getContext("2d"), {
+    type: 'bar',
+    data: {
+      labels: ["{{ city1.name }}", "{{ city2.name }}"],
+      datasets: [
+        { label: "Max Temp", data: [{{ city1.max }}, {{ city2.max }}], backgroundColor: "#3498db" },
+        { label: "Min Temp", data: [{{ city1.min }}, {{ city2.min }}], backgroundColor: "#2ecc71" }
+      ]
+    },
+    options: { responsive: true, scales: { y: { beginAtZero: true } } }
+  });
+
+  new Chart(document.getElementById("windChart").getContext("2d"), {
+    type: 'bar',
+    data: {
+      labels: ["{{ city1.name }}", "{{ city2.name }}"],
+      datasets: [{ label: "Wind Speed", data: [{{ city1.wind }}, {{ city2.wind }}], backgroundColor: "#9b59b6" }]
+    },
+    options: { responsive: true, scales: { y: { beginAtZero: true } } }
+  });
+
+  new Chart(document.getElementById("rainChart").getContext("2d"), {
+    type: 'bar',
+    data: {
+      labels: ["{{ city1.name }}", "{{ city2.name }}"],
+      datasets: [{ label: "Rainy Days", data: [{{ city1.rain }}, {{ city2.rain }}], backgroundColor: "#e67e22" }]
+    },
+    options: { responsive: true, scales: { y: { beginAtZero: true } } }
+  });
+</script>
+<div style="text-align: center; margin-top: 2rem;">
+  <a href="/" class="btn btn-full">
+    🔁 Compare Again
+  </a>
+</div>
+
+{% endif %}
+
+<!-- S3 Saved History (Hidden on Result) -->
+{% if not city1 and not city2 and all_keys %}
+<div class="controls" style="margin-top: 3rem;">
+  <h3>Compare from Saved History</h3>
+  <form method="post" action="/compare">
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="selected_key1">Select First Dataset</label>
+        <select name="selected_key1" id="selected_key1">
+          <option disabled selected>Select First Key</option>
+          {% for key in all_keys %}
+          <option value="{{ key }}">{{ key }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="selected_key2">Select Second Dataset</label>
+        <select name="selected_key2" id="selected_key2">
+          <option disabled selected>Select Second Key</option>
+          {% for key in all_keys %}
+          <option value="{{ key }}">{{ key }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-full">
+      <i class="fas fa-history"></i> Compare Saved Weather Data
+    </button>
+  </form>
+</div>
+{% endif %}
+
+{% endblock %}

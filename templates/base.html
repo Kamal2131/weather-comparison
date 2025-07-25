@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}WeatherCompare{% endblock %}</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="/static/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <!-- Header/Navbar -->
+  <header>
+    <div class="header-container">
+      <div class="logo">
+        <i class="fas fa-cloud-sun"></i> WeatherCompare
+      </div>
+      <nav class="nav-links">
+        <a href="/"><i class="fas fa-home"></i> Home</a>
+        <a href="/about"><i class="fas fa-info-circle"></i> About</a>
+        <a href="/contact"><i class="fas fa-envelope"></i> Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-wave"></div>
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>WeatherCompare</h3>
+        <p>Compare city weather using real historical data from S3.</p>
+      </div>
+      <div class="footer-section">
+        <h3>Quick Links</h3>
+        <ul class="footer-links">
+          <li><a href="/"><i class="fas fa-home"></i> Home</a></li>
+          <li><a href="/about"><i class="fas fa-info-circle"></i> About</a> </li>
+          <li><a href="/contact"><i class="fas fa-envelope"></i> Contact</a> </li>
+        </ul>
+      </div>
+    </div>
+    <div class="copyright">
+      &copy; 2025 WeatherCompare | Built with ❤️ by Kamal
+    </div>
+  </footer>
+
+</body>
+</html>

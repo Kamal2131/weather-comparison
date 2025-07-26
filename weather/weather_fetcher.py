@@ -1,4 +1,3 @@
-# --- weather/weather_fetcher.py ---
 import requests
 import pandas as pd
 from datetime import datetime, timedelta
@@ -9,8 +8,20 @@ load_dotenv()
 API_KEY = os.getenv("WEATHER_API_KEY")
 
 def fetch_weather(city: str, date: str):
-    url = "http://api.weatherapi.com/v1/history.json"
-    params = {"key": API_KEY, "q": city, "dt": date}
+    today = datetime.utcnow().date()
+    target = datetime.strptime(date, "%Y-%m-%d").date()
+    url = (
+        "http://api.weatherapi.com/v1/history.json"
+        if target < today else
+        "http://api.weatherapi.com/v1/forecast.json"
+    )
+
+    params = {
+        "key": API_KEY,
+        "q": city,
+        "dt": date,
+        "days": 1,
+    }
 
     try:
         r = requests.get(url, params=params)
@@ -24,15 +35,17 @@ def fetch_weather(city: str, date: str):
         print(f"❌ WeatherAPI Error: {data['error']['message']}")
         return None
 
+    forecast_day = data.get("forecast", {}).get("forecastday", [{}])[0]
+    day = forecast_day.get("day", {})
+
     return {
         "city": city,
         "date": date,
-        "max_temp": data["forecast"]["forecastday"][0]["day"]["maxtemp_c"],
-        "min_temp": data["forecast"]["forecastday"][0]["day"]["mintemp_c"],
-        "wind_kph": data["forecast"]["forecastday"][0]["day"]["maxwind_kph"],
-        "condition": data["forecast"]["forecastday"][0]["day"]["condition"]["text"]
+        "max_temp": day.get("maxtemp_c", None),
+        "min_temp": day.get("mintemp_c", None),
+        "wind_kph": day.get("maxwind_kph", None),
+        "condition": day.get("condition", {}).get("text", "")
     }
-
 
 def get_weather_range(city, start_date, end_date):
     all_data = []

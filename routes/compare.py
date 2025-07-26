@@ -6,13 +6,12 @@ from utils.s3_utils import list_weather_keys, read_df_from_s3, save_df_to_s3
 from weather.weather_fetcher import get_weather_range
 
 router = APIRouter()
-
 templates = Jinja2Templates(directory="templates")
 router.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 def get_stats(city, start, end):
-    key = f"{city}_{start}_{end}.csv"
+    key = f"weather/{city}_{start}_{end}.csv"  # save inside 'weather/' folder
     df = read_df_from_s3(key)
 
     if df is None or df.empty or "max_temp" not in df.columns:
@@ -30,6 +29,7 @@ def get_stats(city, start, end):
         "rain": df[df["condition"].str.contains("rain", case=False)].shape[0],
     }
 
+
 @router.post("/compare", response_class=HTMLResponse)
 async def compare_weather(
     request: Request,
@@ -40,7 +40,7 @@ async def compare_weather(
     selected_key1: str = Form(None),
     selected_key2: str = Form(None)
 ):
-    # If using dropdown selection
+    # If comparing from S3 saved history
     if selected_key1 and selected_key2:
         df1 = read_df_from_s3(selected_key1)
         df2 = read_df_from_s3(selected_key2)
@@ -50,11 +50,12 @@ async def compare_weather(
                 "request": request,
                 "city1": None,
                 "city2": None,
-                "error": "One or both historical datasets are missing or corrupted."
+                "error": "One or both historical datasets are missing or corrupted.",
+                "all_keys": list_weather_keys()
             })
 
         stats1 = {
-            "name": selected_key1.split("_")[0].title(),
+            "name": selected_key1.split("/")[-1].split("_")[0].title(),
             "max": round(df1["max_temp"].mean(), 1),
             "min": round(df1["min_temp"].mean(), 1),
             "wind": round(df1["wind_kph"].mean(), 1),
@@ -62,7 +63,7 @@ async def compare_weather(
         }
 
         stats2 = {
-            "name": selected_key2.split("_")[0].title(),
+            "name": selected_key2.split("/")[-1].split("_")[0].title(),
             "max": round(df2["max_temp"].mean(), 1),
             "min": round(df2["min_temp"].mean(), 1),
             "wind": round(df2["wind_kph"].mean(), 1),
@@ -76,7 +77,7 @@ async def compare_weather(
             "all_keys": list_weather_keys()
         })
 
-    # Otherwise: handle live form request
+    # Otherwise use live API
     stats1 = get_stats(city1, start, end)
     stats2 = get_stats(city2, start, end)
 

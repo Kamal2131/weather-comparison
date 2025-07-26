@@ -4,8 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{% block title %}WeatherCompare{% endblock %}</title>
+
+  <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <!-- Custom CSS -->
   <link rel="stylesheet" href="/static/style.css" />
+
+  <!-- Chart.js for graphs -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
@@ -13,10 +19,13 @@
   <!-- Header/Navbar -->
   <header>
     <div class="header-container">
-      <div class="logo">
+      <div href="/" class="logo">
         <i class="fas fa-cloud-sun"></i> WeatherCompare
       </div>
-      <nav class="nav-links">
+      <button class="menu-toggle" onclick="toggleMenu()" aria-label="Toggle Menu">
+        <i class="fas fa-bars"></i>
+      </button>
+      <nav class="nav-links" id="navbar">
         <a href="/"><i class="fas fa-home"></i> Home</a>
         <a href="/about"><i class="fas fa-info-circle"></i> About</a>
         <a href="/contact"><i class="fas fa-envelope"></i> Contact</a>
@@ -41,8 +50,8 @@
         <h3>Quick Links</h3>
         <ul class="footer-links">
           <li><a href="/"><i class="fas fa-home"></i> Home</a></li>
-          <li><a href="/about"><i class="fas fa-info-circle"></i> About</a> </li>
-          <li><a href="/contact"><i class="fas fa-envelope"></i> Contact</a> </li>
+          <li><a href="/about"><i class="fas fa-info-circle"></i> About</a></li>
+          <li><a href="/contact"><i class="fas fa-envelope"></i> Contact</a></li>
         </ul>
       </div>
     </div>
@@ -50,6 +59,14 @@
       &copy; 2025 WeatherCompare | Built with ❤️ by Kamal
     </div>
   </footer>
+
+  <!-- Mobile Nav Toggle Script -->
+  <script>
+    function toggleMenu() {
+      const nav = document.getElementById("navbar");
+      nav.classList.toggle("active");
+    }
+  </script>
 
 </body>
 </html>
